@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -32,7 +32,6 @@ import com.github.benmanes.gradle.versions.updates.gradle.GradleUpdateResult
 import com.github.benmanes.gradle.versions.updates.gradle.GradleUpdateResults
 import groovy.transform.CompileStatic
 import groovy.transform.TupleConstructor
-import groovy.transform.TypeCheckingMode
 import org.gradle.api.Project
 import org.gradle.api.artifacts.ModuleVersionSelector
 import org.gradle.api.artifacts.UnresolvedDependency
@@ -68,6 +67,8 @@ class DependencyUpdatesReporter {
   Map<Map<String, String>, Coordinate> downgradeVersions
   /** The dependencies where upgrades were found (below latest found). */
   Map<Map<String, String>, Coordinate> upgradeVersions
+  /** The dependencies that were declared without version. */
+  Set<Coordinate> undeclared
   /** The dependencies that could not be resolved. */
   Set<UnresolvedDependency> unresolved
 
@@ -144,19 +145,21 @@ class DependencyUpdatesReporter {
   }
 
   Result buildBaseObject() {
-    SortedSet current = buildCurrentGroup()
-    SortedSet outdated = buildOutdatedGroup()
-    SortedSet exceeded = buildExceededGroup()
-    SortedSet unresolved = buildUnresolvedGroup()
+    SortedSet sortedCurrent = buildCurrentGroup()
+    SortedSet sortedOutdated = buildOutdatedGroup()
+    SortedSet sortedExceeded = buildExceededGroup()
+    SortedSet SortedUndeclared = buildUndeclaredGroup()
+    SortedSet sortedUnresolved = buildUnresolvedGroup()
 
-    def count = current.size() + outdated.size() + exceeded.size() + unresolved.size()
+    def count = sortedCurrent.size() + sortedOutdated.size() + sortedExceeded.size() + SortedUndeclared.size() + sortedUnresolved.size()
 
     buildObject(
       count,
-      buildDependenciesGroup(current),
-      buildDependenciesGroup(outdated),
-      buildDependenciesGroup(exceeded),
-      buildDependenciesGroup(unresolved),
+      buildDependenciesGroup(sortedCurrent),
+      buildDependenciesGroup(sortedOutdated),
+      buildDependenciesGroup(sortedExceeded),
+      buildDependenciesGroup(SortedUndeclared),
+      buildDependenciesGroup(sortedUnresolved),
       buildGradleUpdateResults()
     )
   }
@@ -202,6 +205,10 @@ class DependencyUpdatesReporter {
     } as SortedSet
   }
 
+  protected SortedSet buildUndeclaredGroup() {
+    return undeclared.collect { Coordinate coordinate -> new Dependency(coordinate.groupId, coordinate.artifactId)} as SortedSet
+  }
+
   protected SortedSet<DependencyUnresolved> buildUnresolvedGroup() {
     unresolved.sort { UnresolvedDependency a, UnresolvedDependency b ->
       compareKeys(keyOf(a.selector), keyOf(b.selector))
@@ -214,16 +221,17 @@ class DependencyUpdatesReporter {
     } as SortedSet
   }
 
-  protected Result buildObject(int count,
-                               DependenciesGroup current,
-                               DependenciesGroup outdated,
-                               DependenciesGroup exceeded,
-                               DependenciesGroup unresolved,
-                               GradleUpdateResults gradleUpdateResults) {
-    new Result(count, current, outdated, exceeded, unresolved, gradleUpdateResults)
+  protected static Result buildObject(int count,
+                                      DependenciesGroup currentGroup,
+                                      DependenciesGroup outdatedGroup,
+                                      DependenciesGroup exceededGroup,
+                                      DependenciesGroup undeclaredGroup,
+                                      DependenciesGroup unresolvedGroup,
+                                      GradleUpdateResults gradleUpdateResults) {
+    new Result(count, currentGroup, outdatedGroup, exceededGroup, undeclaredGroup, unresolvedGroup, gradleUpdateResults)
   }
 
-  protected <T extends Dependency> DependenciesGroup<T> buildDependenciesGroup(
+  protected static <T extends Dependency> DependenciesGroup<T> buildDependenciesGroup(
     SortedSet<T> dependencies) {
     new DependenciesGroup<T>(dependencies.size(), dependencies)
   }
@@ -249,7 +257,7 @@ class DependencyUpdatesReporter {
   protected def buildOutdatedDependency(Coordinate coordinate, Map<String, String> key) {
     def available
 
-    String laterVersion = latestVersions[key]?.getVersion();
+    String laterVersion = latestVersions[key]?.getVersion()
     switch (revision) {
       case 'milestone':
         available = new VersionAvailable(null, laterVersion)
@@ -265,7 +273,7 @@ class DependencyUpdatesReporter {
       projectUrls[key], coordinate?.getUserReason(), available)
   }
 
-  def sortByGroupAndName(Map<Map<String, String>, Coordinate> dependencies) {
+  static Map<Map<String, String>, Coordinate> sortByGroupAndName(Map<Map<String, String>, Coordinate> dependencies) {
     dependencies.sort { Map.Entry<Map<String, String>, Coordinate> a,
       Map.Entry<Map<String, String>, Coordinate> b -> compareKeys(a.key, b.key)
     }

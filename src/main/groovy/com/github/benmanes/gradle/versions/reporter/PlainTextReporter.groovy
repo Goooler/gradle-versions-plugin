@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -45,6 +45,7 @@ class PlainTextReporter extends AbstractReporter {
       writeUpToDate(printStream, result)
       writeExceedLatestFound(printStream, result)
       writeUpgrades(printStream, result)
+      writeUndeclared(printStream,result)
       writeUnresolved(printStream, result)
     }
 
@@ -121,8 +122,7 @@ class PlainTextReporter extends AbstractReporter {
     def downgradeVersions = result.exceeded.dependencies
     if (!downgradeVersions.isEmpty()) {
       printStream.println()
-      printStream.println('The following dependencies exceed the version found at the '
-        + revision + ' revision level:')
+      printStream.println("The following dependencies exceed the version found at the ${revision} revision level:")
       downgradeVersions.each { DependencyLatest dep ->
         def currentVersion = dep.version
         printStream.println " - ${label(dep)} [${currentVersion} <- ${dep.latest}]"
@@ -154,13 +154,21 @@ class PlainTextReporter extends AbstractReporter {
     }
   }
 
+  private void writeUndeclared(Object printStream, Result result) {
+    Collection<Dependency> undeclaredVersions = result.undeclared.dependencies
+    if(!undeclaredVersions.empty) {
+      printStream.println()
+      printStream.println( 'Failed to compare versions for the following dependencies because they were declared without version:')
+      undeclaredVersions.each { Dependency dependency -> printStream.println( " - ${label(dependency)}")}
+    }
+  }
+
   private def writeUnresolved(printStream, Result result) {
     def unresolved = result.unresolved.dependencies
     if (!unresolved.isEmpty()) {
       printStream.println()
       printStream.println(
-        'Failed to determine the latest version for the following dependencies '
-          + '(use --info for details):')
+        'Failed to determine the latest version for the following dependencies (use --info for details):')
       unresolved.each { DependencyUnresolved dep ->
         printStream.println ' - ' + label(dep)
         if (dep.getUserReason()) {
@@ -175,7 +183,7 @@ class PlainTextReporter extends AbstractReporter {
   }
 
   /** Returns the dependency key as a stringified label. */
-  private def label(Dependency dependency) {
+  private static def label(Dependency dependency) {
     dependency.group + ':' + dependency.name
   }
 }

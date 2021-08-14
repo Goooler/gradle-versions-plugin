@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,13 +21,14 @@ import org.gradle.api.internal.artifacts.ivyservice.ivyresolve.strategy.DefaultV
 import org.gradle.api.internal.artifacts.ivyservice.ivyresolve.strategy.VersionParser
 
 /**
- * A mapping of which versions are out of date, up to date, or exceed the latest found.
+ * A mapping of which versions are out of date, up to date, undeclared, or exceed the latest found.
  */
 @CompileStatic
 class VersionMapping {
   final SortedSet<Coordinate> downgrade = new TreeSet<>()
   final SortedSet<Coordinate> upToDate = new TreeSet<>()
   final SortedSet<Coordinate> upgrade = new TreeSet<>()
+  final SortedSet<Coordinate> undeclared = new TreeSet<>()
 
   final SortedSet<Coordinate> unresolved = new TreeSet<>()
   final SortedSet<Coordinate> current = new TreeSet<>()
@@ -62,7 +63,7 @@ class VersionMapping {
       if (unresolved.contains(coordinate)) {
         continue
       } else if (coordinate.version == 'none') {
-        upToDate.add(coordinate)
+        undeclared.add(coordinate)
         continue
       }
       int result = comparator.compare(coordinate.version, latestCoordinate.version)

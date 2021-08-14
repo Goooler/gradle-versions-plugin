@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,7 +19,6 @@ import groovy.transform.CompileStatic
 import groovy.transform.EqualsAndHashCode
 import org.gradle.api.artifacts.Dependency
 import org.gradle.api.artifacts.ExternalModuleDependency
-import org.gradle.api.artifacts.DependencyConstraint
 import org.gradle.api.artifacts.ModuleVersionIdentifier
 import org.gradle.api.artifacts.ModuleVersionSelector
 import org.gradle.api.artifacts.component.ModuleComponentIdentifier
@@ -53,8 +52,8 @@ class Coordinate implements Comparable<Coordinate> {
 
   @Override
   int compareTo(Coordinate coordinate) {
-    int result = key.compareTo(coordinate.key)
-    return (result == 0) ? version.compareTo(coordinate.version) : result
+    int result = key <=> coordinate.key
+    return (result == 0) ? version <=> coordinate.version : result
   }
 
   static Coordinate from(ExternalModuleDependency dependency) {
@@ -111,8 +110,8 @@ class Coordinate implements Comparable<Coordinate> {
 
     @Override
     int compareTo(Key key) {
-      int result = groupId.compareTo(key.groupId)
-      return (result == 0) ? artifactId.compareTo(key.artifactId) : result
+      int result = groupId <=> key.groupId
+      return (result == 0) ? artifactId <=> key.artifactId : result
     }
   }
 }

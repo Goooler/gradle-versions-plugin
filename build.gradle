@@ -1,5 +1,5 @@
 plugins {
-  id 'com.gradle.plugin-publish' version '0.14.0'
+  id 'com.gradle.plugin-publish' version '0.15.0'
   id 'java-gradle-plugin'
   id 'maven-publish'
   id 'codenarc'
@@ -11,7 +11,7 @@ repositories {
 }
 
 group = 'com.github.ben-manes'
-version = '0.38.0'
+version = '0.39.0'
 
 sourceCompatibility = JavaVersion.VERSION_1_8
 
@@ -20,16 +20,12 @@ buildScan {
   termsOfServiceAgree = 'yes'
 }
 
-tasks.wrapper {
-  distributionType 'all'
-}
-
 codenarcMain {
   configFile = file('config/codenarc/rules.groovy')
 }
 
 codenarcTest {
-  configFile = file('config/codenarc/testrules.groovy')
+  configFile = file('config/codenarc/testRules.groovy')
 }
 
 tasks.withType(CodeNarc) { codeNarcTask ->
@@ -51,7 +47,7 @@ task createClasspathManifest {
 
 // Add the classpath file to the test runtime classpath
 dependencies {
-  implementation 'com.thoughtworks.xstream:xstream:1.4.16'
+  implementation 'com.thoughtworks.xstream:xstream:1.4.17'
 
   testRuntimeOnly files(createClasspathManifest)
 
@@ -137,7 +133,7 @@ publishing {
         licenses {
           license {
             name = 'The Apache Software License, Version 2.0'
-            url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+            url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
             distribution = 'repo'
           }
         }
@@ -190,5 +186,5 @@ gradlePlugin {
 pluginBundle {
   website = 'https://github.com/ben-manes/gradle-versions-plugin'
   vcsUrl = 'https://github.com/ben-manes/gradle-versions-plugin'
-  tags = [ 'dependencies', 'versions', 'updates' ]
+  tags = ['dependencies', 'versions', 'updates']
 }
