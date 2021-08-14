@@ -202,7 +202,7 @@ final class DifferentGradleVersionsSpec extends Specification {
 
     def gradleDir = new File(testProjectDir, "gradle")
     gradleDir.mkdir()
-    def verificationFile = new File(gradleDir, 'gradle/verification-metadata.xml')
+    def verificationFile = new File(gradleDir, 'verification-metadata.xml')
     verificationFile <<
       """<?xml version="1.0" encoding="UTF-8"?>
         <verification-metadata xmlns="https://schema.gradle.org/dependency-verification" xmlns:xsi="https://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://schema.gradle.org/dependency-verification https://schema.gradle.org/dependency-verification/dependency-verification-1.0.xsd">
